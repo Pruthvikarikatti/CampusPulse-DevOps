@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusPulse | Incident Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+    <div class="brand">
+        <span class="brand-icon">CP</span>
+        <div>
+            <h1>CampusPulse</h1>
+            <p>Smart Campus Incident Management</p>
+        </div>
+    </div>
+    <span class="live-badge">● CAMPUS OPERATIONS</span>
+</header>
+
+<main class="container">
+    <section class="hero">
+        <div>
+            <p class="eyebrow">CAMPUS SERVICE DESK</p>
+            <h2>Every issue deserves<br><span>attention.</span></h2>
+            <p class="hero-text">
+                Report campus problems, monitor progress, and help keep
+                your campus running smoothly.
+            </p>
+        </div>
+        <div class="hero-mark">CP<span>+</span></div>
+    </section>
+
+    <section class="stats">
+        <div class="stat-card">
+            <p>Total Reports</p>
+            <strong>{{ stats.total }}</strong>
+            <span>All incidents</span>
+        </div>
+        <div class="stat-card">
+            <p>Open</p>
+            <strong>{{ stats.open }}</strong>
+            <span>Awaiting action</span>
+        </div>
+        <div class="stat-card">
+            <p>In Progress</p>
+            <strong>{{ stats.progress }}</strong>
+            <span>Being handled</span>
+        </div>
+        <div class="stat-card">
+            <p>Resolved</p>
+            <strong>{{ stats.resolved }}</strong>
+            <span>Completed</span>
+        </div>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="notice {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <div class="content-grid">
+        <section class="panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">NEW REQUEST</p>
+                    <h3>Report an incident</h3>
+                </div>
+                <span class="number">01</span>
+            </div>
+
+            <form method="POST" action="/">
+                <label for="title">Incident title *</label>
+                <input id="title" name="title" maxlength="120"
+                       required placeholder="e.g. Wi-Fi not working in Lab 2">
+
+                <label for="category">Category *</label>
+                <select id="category" name="category" required>
+                    {% for category in categories %}
+                        <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="location">Campus location *</label>
+                <input id="location" name="location" maxlength="120"
+                       required placeholder="e.g. Block A, Room 204">
+
+                <label for="priority">Priority *</label>
+                <select id="priority" name="priority" required>
+                    {% for priority in priorities %}
+                        <option value="{{ priority }}">{{ priority }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="description">Description *</label>
+                <textarea id="description" name="description"
+                          maxlength="2000" rows="4" required
+                          placeholder="Describe the issue and its impact..."></textarea>
+
+                <button class="primary-button" type="submit">
+                    Submit incident <span>→</span>
+                </button>
+            </form>
+        </section>
+
+        <section class="panel incidents-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">CAMPUS ACTIVITY</p>
+                    <h3>Incident reports</h3>
+                </div>
+                <span class="number">{{ stats.total }}</span>
+            </div>
+
+            {% if incidents %}
+                <div class="incident-list">
+                    {% for incident in incidents %}
+                        <article class="incident">
+                            <div class="incident-top">
+                                <span class="incident-id">
+                                    INC-{{ "%04d"|format(incident.id) }}
+                                </span>
+                                <span class="priority {{ incident.priority|lower }}">
+                                    {{ incident.priority }}
+                                </span>
+                            </div>
+
+                            <h4>{{ incident.title }}</h4>
+                            <p class="muted">
+                                {{ incident.category }} · {{ incident.location }}
+                            </p>
+                            <p class="description">{{ incident.description }}</p>
+
+                            <form class="status-form" method="POST"
+                                  action="{{ url_for('update_status', incident_id=incident.id) }}">
+                                <label for="status-{{ incident.id }}">Status</label>
+                                <select id="status-{{ incident.id }}" name="status">
+                                    {% for status in ["Open", "In Progress", "Resolved"] %}
+                                        <option value="{{ status }}"
+                                            {% if incident.status == status %}selected{% endif %}>
+                                            {{ status }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <button class="small-button" type="submit">Update</button>
+                            </form>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">✓</div>
+                    <h4>No incidents yet</h4>
+                    <p>Submit your first report using the form.</p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <footer>
+        CampusPulse <span>·</span> DevOps Academic Project
+        <span>·</span> Built with Python and Flask
+    </footer>
+</main>
+</body>
+</html>

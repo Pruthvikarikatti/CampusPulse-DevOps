@@ -1,0 +1,8 @@
+gitignore
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+campuspulse.db
+.env
+.DS_Store
